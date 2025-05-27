@@ -8,7 +8,6 @@
 AT_COMPILE_TIME                 :: true;
 VK_MEM_ALLOC_COMPILE            :: true;
 VK_MEM_ALLOC_OUTPUT_BINDINGS    :: true;
-VK_MEM_ALLOC_DEBUG              :: true;
 vulkan_h_location               :: "source/vulkan/vulkan.h";
 
 // if the lib path is empty system_library will be used.
@@ -75,6 +74,7 @@ compile_vulkan_memory_allocator :: () -> bool {
     cwd := get_working_directory();
     include := tprint("-I%/source", cwd);
     src_path := tprint("%/source/vulkan_memory_allocator/vk_mem_alloc.cpp", cwd);
+    success := true;
     extra_args: [..]string;
     // vulkan memory allocator uses the VMA_CALL_PRE prefix before all of their functions
     // here we can seet them to be exported when it's compiled as a library.
@@ -83,11 +83,9 @@ compile_vulkan_memory_allocator :: () -> bool {
     array_add(*extra_args, "/DVMA_IMPLEMENTATION");
     // provide path to vulkan.h
     array_add(*extra_args, include);
-    if !VK_MEM_ALLOC_DEBUG {
-        // not a debug build
-        array_add(*extra_args, "/DNDEBUG");
-    }
-    success := build_cpp_static_lib("libs/VkMemAlloc", src_path, extra=extra_args, debug=VK_MEM_ALLOC_DEBUG);
+    success &= build_cpp_static_lib("libs/VkMemAlloc_DEBUG", src_path, extra=extra_args, debug=true);
+    array_add(*extra_args, "/DNDEBUG");
+    success &= build_cpp_static_lib("libs/VkMemAlloc", src_path, extra=extra_args, debug=false);
     return success;
 }
 

@@ -8,7 +8,7 @@ amount of work to get things going well.
 
 */
 
-#module_parameters(USE_VULKAN_1_1 := true);  // #import this with USE_VULKAN_1_1 == false if your driver doesn't have those routines.
+#module_parameters(USE_VULKAN_1_1 := true)(MEMORY_ALLOCATOR_DEBUG := false);  // #import this with USE_VULKAN_1_1 == false if your driver doesn't have those routines.
 
 VK_NULL_HANDLE                    :: null;
 
@@ -61,7 +61,11 @@ VK_API_VERSION_PATCH   :: (version: u32) -> u32 { return version & 0xfff; }
     #scope_file
     libvulkan :: #library "libs/vulkan-1";
     #scope_export
-    vkmemalloc :: #library,no_dll "libs/VkMemAlloc";
+    #if MEMORY_ALLOCATOR_DEBUG {
+        vkmemalloc :: #library,no_dll "libs/VkMemAlloc_DEBUG";
+    } else {
+        vkmemalloc :: #library,no_dll "libs/VkMemAlloc";
+    }
     // #scope_export
 } else #if OS == .LINUX {
     #load "generated_linux.jai";
