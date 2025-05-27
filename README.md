@@ -42,12 +42,16 @@ VMA generation has only been run and tested on windows. It will need some work t
 ... and you should hopefully be set!
 
 ## Config
+### Vulkan Memory Allocator Compile Time
 there is a little bit of config available in generate.jai:
 ```
 // compile vulkan memory allocator lib
 VK_MEM_ALLOC_COMPILE            :: true;
 // output binding for the vulkan memory allocator lib
 VK_MEM_ALLOC_OUTPUT_BINDINGS    :: true;
-// output debug symbols and see debug printing from vulkan memory allocator lib
-VK_MEM_ALLOC_DEBUG              :: true;
+```
+### Project Compile Time
+in module.jai there is also a module parameter, "MEMORY_ALLOCATOR_DEBUG", for deciding which .lib file (debug or not) to link against. the debug one has debug symbols and does validation and printing similar to vulkan validation layers.
+```
+#module_parameters(USE_VULKAN_1_1 := true)(MEMORY_ALLOCATOR_DEBUG := false);
 ```
