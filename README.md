@@ -48,6 +48,6 @@ there is a little bit of config available in generate.jai:
 VK_MEM_ALLOC_COMPILE            :: true;
 // output binding for the vulkan memory allocator lib
 VK_MEM_ALLOC_OUTPUT_BINDINGS    :: true;
-// output debug symbols when building
+// output debug symbols and see debug printing from vulkan memory allocator lib
 VK_MEM_ALLOC_DEBUG              :: true;
 ```
