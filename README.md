@@ -55,3 +55,7 @@ in module.jai there is also a module parameter, "MEMORY_ALLOCATOR_DEBUG", for de
 ```
 #module_parameters(USE_VULKAN_1_1 := true)(MEMORY_ALLOCATOR_DEBUG := false);
 ```
+you can set this via your import statement.
+```
+#import "Vulkan_With_VMA"()(MEMORY_ALLOCATOR_DEBUG=true);
+```
