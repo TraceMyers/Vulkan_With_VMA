@@ -40,6 +40,7 @@ VK_VERSION_PATCH :: (version: u32) -> u32 { return version & 0xfff; }
 VK_API_VERSION_1_0 :: #run VK_MAKE_VERSION(1, 0, 0);
 VK_API_VERSION_1_1 :: #run VK_MAKE_VERSION(1, 1, 0);
 VK_API_VERSION_1_2 :: #run VK_MAKE_VERSION(1, 2, 0);
+VK_API_VERSION_1_3 :: #run VK_MAKE_VERSION(1, 3, 0);
 
 // These are the new versions:
 VK_MAKE_API_VERSION :: (variant:u32, major: u32, minor: u32, patch: u32) -> u32 {
@@ -55,10 +56,12 @@ VK_API_VERSION_PATCH   :: (version: u32) -> u32 { return version & 0xfff; }
     #load "generated_windows.jai";
     #load "windows_extras.jai";
 
+    vkmemalloc :: #library "libs/VkMemAlloc";
+
     vkCreateWin32SurfaceKHR :: (instance: VkInstance, pCreateInfo: *VkWin32SurfaceCreateInfoKHR, pAllocator: *VkAllocationCallbacks, pSurface: *VkSurfaceKHR) -> VkResult #foreign libvulkan;
     vkGetPhysicalDeviceWin32PresentationSupportKHR :: (physicalDevice: VkPhysicalDevice, queueFamilyIndex: u32) -> VkBool32 #foreign libvulkan;
     #scope_file
-    libvulkan :: #library "win/vulkan-1";
+    libvulkan :: #library "libs/vulkan-1";
 } else #if OS == .LINUX {
     #load "generated_linux.jai";
     libvulkan :: #system_library "libvulkan";
@@ -67,4 +70,6 @@ VK_API_VERSION_PATCH   :: (version: u32) -> u32 { return version & 0xfff; }
 #scope_module
 
 size_t  :: u64;
+
+
 
