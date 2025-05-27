@@ -5,12 +5,14 @@
 // Modified by Ryan Capote for Vulkan 1.3
 
 // config
-AT_COMPILE_TIME   :: true;
-vulkan_h_location :: "source/vulkan.h";
+AT_COMPILE_TIME                 :: true;
+VK_MEM_ALLOC_COMPILE            :: true;
+VK_MEM_ALLOC_OUTPUT_BINDINGS    :: true;
+vulkan_h_location               :: "source/vulkan/vulkan.h";
 
 // if the lib path is empty system_library will be used.
 #if OS == .WINDOWS {
-    vulkan_lib_path :: "win";
+    vulkan_lib_path :: "libs";
 }  else {
     vulkan_lib_path :: "";
 }
@@ -19,7 +21,7 @@ vulkan_h_location :: "source/vulkan.h";
 #if AT_COMPILE_TIME {
     #run {
         set_build_options_dc(.{do_output=false});
-        if !generate_bindings() {
+        if !generate() {
             compiler_set_workspace_status(.FAILED);
         }
     }
@@ -28,7 +30,7 @@ vulkan_h_location :: "source/vulkan.h";
 
     main :: () {
         set_working_directory(path_strip_filename(get_path_of_running_executable()));
-        if !generate_bindings() {
+        if !generate() {
             exit(1);
         }
     }
@@ -58,6 +60,32 @@ OMIT_LIST :: string.[
     "vkGetPhysicalDeviceSurfaceFormats2KHR",
 ];
 
+generate :: () -> bool {
+    do_gen_bindings := ifx VK_MEM_ALLOC_COMPILE then compile_vulkan_memory_allocator() else true;
+    if do_gen_bindings {
+        return generate_bindings();
+    } else {
+        log("failed to compile vulkan memory allocator");
+        return false;
+    }
+}
+
+compile_vulkan_memory_allocator :: () -> bool {
+    cwd := get_working_directory();
+    include := tprint("-I%/source", cwd);
+    args := string.["/DVMA_CALL_PRE=__declspec(dllexport)", "/DVMA_IMPLEMENTATION", include];
+    src_path := tprint("%/source/vulkan_memory_allocator/vk_mem_alloc.cpp", cwd);
+    vulkan_lib := tprint("%/libs/vulkan-1.lib", cwd);
+
+    success := true;
+    // success =  build_cpp_dynamic_lib("libs/VkMemAlloc_Debug",   src_path, extra=args, library_files=.[vulkan_lib], debug=true);
+    success &= build_cpp_dynamic_lib("libs/VkMemAlloc",         src_path, extra=args, library_files=.[vulkan_lib], debug=false);
+    // success &= build_cpp_static_lib("libs/VkMemAlloc_Debug",    src_path, extra=args, library_files=.[vulkan_lib], debug=true);
+    success &= build_cpp_static_lib("libs/VkMemAlloc",          src_path, extra=args, library_files=.[vulkan_lib], debug=false);
+
+    return success;
+}
+
 generate_bindings :: () -> bool {
     output_filename: string;
     opts: Generate_Bindings_Options;
@@ -81,7 +109,11 @@ generate_bindings :: () -> bool {
         if vulkan_lib_path then array_add(*libpaths, vulkan_lib_path);
 
         array_add(*source_files, vulkan_h_location);
-        array_add(*system_include_paths, GENERATOR_DEFAULT_SYSTEM_INCLUDE_PATH);
+        if VK_MEM_ALLOC_OUTPUT_BINDINGS {
+            array_add(*source_files, "source/vulkan_memory_allocator/vk_mem_alloc.cpp");
+            array_add(*libpaths, "libs");
+            array_add(*libnames, "VkMemAlloc");
+        }
 
         generate_library_declarations = false;
         omit_global_declarations = false;
@@ -267,12 +299,13 @@ get_sType_default_value_from_struct_name :: (name: string) -> string {
 #import "File";
 #import "String";
 #import "Hash_Table";
+#import "BuildCpp";
 
 VULKAN_FOOTER :: #string END
 #scope_file
 
 #if OS == .WINDOWS {
-    libvulkan :: #library "win/vulkan-1";
+    libvulkan :: #library "libs/vulkan-1";
 } else #if OS == .LINUX {
     libvulkan :: #system_library "libvulkan.so.1";
 } else {
