@@ -83,7 +83,7 @@ compile_vulkan_memory_allocator :: () -> bool {
     array_add(*extra_args, "/DVMA_IMPLEMENTATION");
     // provide path to vulkan.h
     array_add(*extra_args, include);
-    if VK_MEM_ALLOC_DEBUG {
+    if !VK_MEM_ALLOC_DEBUG {
         // not a debug build
         array_add(*extra_args, "/DNDEBUG");
     }
