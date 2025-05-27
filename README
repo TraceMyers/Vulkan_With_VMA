@@ -4,4 +4,4 @@ Current version: Based on LunarG Vulkan SDK 1.3.250.1
 
 Extends the module provided with the compiler by providing 1.3 support as well as integrating Vulkan Memory Allocator. I did it this way rather than creating a separate module to decrease the possibility of borked dependency issues.
 
-Generation that VMA has only been run and tested on windows. It's likely a few lines will need to be edited to make it work on linux.
+VMA generation has only been run and tested on windows. It's likely a few lines will need to be edited to make it work on linux.
