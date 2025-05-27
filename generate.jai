@@ -8,6 +8,7 @@
 AT_COMPILE_TIME                 :: true;
 VK_MEM_ALLOC_COMPILE            :: true;
 VK_MEM_ALLOC_OUTPUT_BINDINGS    :: true;
+VK_MEM_ALLOC_DEBUG              :: true;
 vulkan_h_location               :: "source/vulkan/vulkan.h";
 
 // if the lib path is empty system_library will be used.
@@ -73,16 +74,20 @@ generate :: () -> bool {
 compile_vulkan_memory_allocator :: () -> bool {
     cwd := get_working_directory();
     include := tprint("-I%/source", cwd);
-    args := string.["/DVMA_CALL_PRE=__declspec(dllexport)", "/DVMA_IMPLEMENTATION", include];
     src_path := tprint("%/source/vulkan_memory_allocator/vk_mem_alloc.cpp", cwd);
-    vulkan_lib := tprint("%/libs/vulkan-1.lib", cwd);
-
-    success := true;
-    // success =  build_cpp_dynamic_lib("libs/VkMemAlloc_Debug",   src_path, extra=args, library_files=.[vulkan_lib], debug=true);
-    success &= build_cpp_dynamic_lib("libs/VkMemAlloc",         src_path, extra=args, library_files=.[vulkan_lib], debug=false);
-    // success &= build_cpp_static_lib("libs/VkMemAlloc_Debug",    src_path, extra=args, library_files=.[vulkan_lib], debug=true);
-    success &= build_cpp_static_lib("libs/VkMemAlloc",          src_path, extra=args, library_files=.[vulkan_lib], debug=false);
-
+    extra_args: [..]string;
+    // vulkan memory allocator uses the VMA_CALL_PRE prefix before all of their functions
+    // here we can seet them to be exported when it's compiled as a library.
+    array_add(*extra_args, "/DVMA_CALL_PRE=__declspec(dllexport)");
+    // without this, all implementations are erased before commpliation
+    array_add(*extra_args, "/DVMA_IMPLEMENTATION");
+    // provide path to vulkan.h
+    array_add(*extra_args, include);
+    if VK_MEM_ALLOC_DEBUG {
+        // not a debug build
+        array_add(*extra_args, "/DNDEBUG");
+    }
+    success := build_cpp_static_lib("libs/VkMemAlloc", src_path, extra=extra_args, debug=VK_MEM_ALLOC_DEBUG);
     return success;
 }
 
@@ -312,3 +317,5 @@ VULKAN_FOOTER :: #string END
     #assert(false);
 }
 END
+
+// Crt      :: #system_library "msvcrt";

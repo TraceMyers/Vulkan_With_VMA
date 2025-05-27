@@ -56,12 +56,13 @@ VK_API_VERSION_PATCH   :: (version: u32) -> u32 { return version & 0xfff; }
     #load "generated_windows.jai";
     #load "windows_extras.jai";
 
-    vkmemalloc :: #library "libs/VkMemAlloc";
-
     vkCreateWin32SurfaceKHR :: (instance: VkInstance, pCreateInfo: *VkWin32SurfaceCreateInfoKHR, pAllocator: *VkAllocationCallbacks, pSurface: *VkSurfaceKHR) -> VkResult #foreign libvulkan;
     vkGetPhysicalDeviceWin32PresentationSupportKHR :: (physicalDevice: VkPhysicalDevice, queueFamilyIndex: u32) -> VkBool32 #foreign libvulkan;
     #scope_file
     libvulkan :: #library "libs/vulkan-1";
+    #scope_export
+    vkmemalloc :: #library,no_dll "libs/VkMemAlloc";
+    // #scope_export
 } else #if OS == .LINUX {
     #load "generated_linux.jai";
     libvulkan :: #system_library "libvulkan";

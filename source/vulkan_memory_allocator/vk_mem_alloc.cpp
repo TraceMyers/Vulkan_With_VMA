@@ -56,9 +56,9 @@ internally, like:
 
     vulkanFunctions.vkAllocateMemory = &vkAllocateMemory;
 */
-#if !defined(VMA_STATIC_VULKAN_FUNCTIONS) && !defined(VK_NO_PROTOTYPES)
+// #if !defined(VMA_STATIC_VULKAN_FUNCTIONS) && !defined(VK_NO_PROTOTYPES)
     #define VMA_STATIC_VULKAN_FUNCTIONS 1
-#endif
+// #endif
 
 /*
 Define this macro to 1 to make the library fetch pointers to Vulkan functions
@@ -70,21 +70,21 @@ To use this feature in new versions of VMA you now have to pass
 VmaVulkanFunctions::vkGetInstanceProcAddr and vkGetDeviceProcAddr as
 VmaAllocatorCreateInfo::pVulkanFunctions. Other members can be null.
 */
-#if !defined(VMA_DYNAMIC_VULKAN_FUNCTIONS)
-    #define VMA_DYNAMIC_VULKAN_FUNCTIONS 1
-#endif
+// #if !defined(VMA_DYNAMIC_VULKAN_FUNCTIONS)
+    // #define VMA_DYNAMIC_VULKAN_FUNCTIONS 1
+// #endif
 
-#ifndef VMA_USE_STL_SHARED_MUTEX
-    #if __cplusplus >= 201703L || _MSVC_LANG >= 201703L // C++17
-        #define VMA_USE_STL_SHARED_MUTEX 1
-    // Visual studio defines __cplusplus properly only when passed additional parameter: /Zc:__cplusplus
-    // Otherwise it is always 199711L, despite shared_mutex works since Visual Studio 2015 Update 2.
-    #elif defined(_MSC_FULL_VER) && _MSC_FULL_VER >= 190023918 && __cplusplus == 199711L && _MSVC_LANG >= 201703L
-        #define VMA_USE_STL_SHARED_MUTEX 1
-    #else
-        #define VMA_USE_STL_SHARED_MUTEX 0
-    #endif
-#endif
+// #ifndef VMA_USE_STL_SHARED_MUTEX
+//     #if __cplusplus >= 201703L || _MSVC_LANG >= 201703L // C++17
+//         #define VMA_USE_STL_SHARED_MUTEX 1
+//     // Visual studio defines __cplusplus properly only when passed additional parameter: /Zc:__cplusplus
+//     // Otherwise it is always 199711L, despite shared_mutex works since Visual Studio 2015 Update 2.
+//     #elif defined(_MSC_FULL_VER) && _MSC_FULL_VER >= 190023918 && __cplusplus == 199711L && _MSVC_LANG >= 201703L
+//         #define VMA_USE_STL_SHARED_MUTEX 1
+//     #else
+//         #define VMA_USE_STL_SHARED_MUTEX 0
+//     #endif
+// #endif
 
 /*
 Define this macro to include custom header files without having to edit this file directly, e.g.:
@@ -289,7 +289,8 @@ static void vma_aligned_free(void* VMA_NULLABLE ptr)
 #endif
 
 #ifndef VMA_DEBUG_LOG
-    #define VMA_DEBUG_LOG(str)   VMA_DEBUG_LOG_FORMAT("%s", (str))
+    // #define VMA_DEBUG_LOG(str)   VMA_DEBUG_LOG_FORMAT("%s", (str))
+    #define VMA_DEBUG_LOG(str)
 #endif
 
 #ifndef VMA_LEAK_LOG_FORMAT
@@ -10330,6 +10331,7 @@ VmaAllocator_T::~VmaAllocator_T()
 
 void VmaAllocator_T::ImportVulkanFunctions(const VmaVulkanFunctions* pVulkanFunctions)
 {
+    
 #if VMA_STATIC_VULKAN_FUNCTIONS == 1
     ImportVulkanFunctions_Static();
 #endif
