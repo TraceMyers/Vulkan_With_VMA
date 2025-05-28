@@ -1,14 +1,40 @@
 /*
-
 Vulkan API bindings.
 
 WARNING: These Vulkan bindings are mostly unused and untested.
 This code is here as a starting point for anyone who wants to use Vulkan, but you can expect to do a significant
 amount of work to get things going well.
 
+EXTRA WARNING: vulkan memory allocator-related things, and the what-library-files-to-use options are currently only
+available on windows.
+
 */
 
-#module_parameters(USE_VULKAN_1_1 := true)(MEMORY_ALLOCATOR_DEBUG := false);  // #import this with USE_VULKAN_1_1 == false if your driver doesn't have those routines.
+// On lib/dll usage in windows:
+//  -   vulkan-1.dll is your program's interface with the vulkan runtime, which interacts with graphics drivers.
+//  -   vulkan-1.dll is distributed via at least graphics driver installations and vc++ redistributables. not sure what 
+//  else.
+//  -   vulkan-1.lib is a convenience binary. it loads functions from vulkan-1.dll so you don't have to do it in your 
+//  program. it might have some other stuff in it, like maybe validation layers (?)
+//  -   vulkan-1.lib is distributed via the vulkan SDK.
+//  -   you can use vulkan-1.lib in two configurations, exposed by module parameter USE_LOCAL_VULKAN_DYNAMIC_LIB:
+//          1. load from the local dll file.
+//          2. load from the system dll file.
+//  -   if you want to swap in a different local .dll, you can find it in your system folders (syswow64 should have it),
+//  and drop it into the /libs/ folder. if you want to swap in a different local .lib, download the vulkan sdk and
+//  copy it from there.
+//  -   I *think* if you use the local dll, it gets statically compiled into your program, since trying to use the local 
+//  dll but removing it from the folder makes for a compilation failure. this would be a jai compiler implemenation
+//  detail I don't know anything about. if that is true, the program that takes this route is both less portable and 
+//  more resilient.
+
+ // - #import this with USE_VULKAN_1_1 == false if your driver doesn't have those routines.
+ // - if MEMORY_ALLOCATOR_DEBUG is true, then VkMemAlloc_DEBUG.lib will be linked instead of VkMemAlloc.lib. the debug
+ //     symbols were created alongside VkMemAlloc_DEBUG + it has debug asserts and logging.
+ // - if USE_LOCAL_VULKAN_DYNAMIC_LIB is true, then the local vulkan-1.dll will be used. otherwise, your program
+ //     will depend on the system's vulkan-1.dll.
+#module_parameters(USE_VULKAN_1_1 := true)(MEMORY_ALLOCATOR_DEBUG := false, USE_LOCAL_VULKAN_DYNAMIC_LIB := true); 
+
 
 VK_NULL_HANDLE                    :: null;
 
@@ -58,23 +84,31 @@ VK_API_VERSION_PATCH   :: (version: u32) -> u32 { return version & 0xfff; }
 
     vkCreateWin32SurfaceKHR :: (instance: VkInstance, pCreateInfo: *VkWin32SurfaceCreateInfoKHR, pAllocator: *VkAllocationCallbacks, pSurface: *VkSurfaceKHR) -> VkResult #foreign libvulkan;
     vkGetPhysicalDeviceWin32PresentationSupportKHR :: (physicalDevice: VkPhysicalDevice, queueFamilyIndex: u32) -> VkBool32 #foreign libvulkan;
-    #scope_file
-    libvulkan :: #library "libs/vulkan-1";
-    #scope_export
+
+#scope_module // -------------------------------------------------------------------------------------------- { MODULE }
+
+    #if USE_LOCAL_VULKAN_DYNAMIC_LIB {
+        libvulkan :: #library "libs/vulkan-1";
+    } else {
+        libvulkan :: #library,no_dll "libs/vulkan-1";
+    }
+
+#scope_export // -------------------------------------------------------------------------------------------- { EXPORT }
+
     #if MEMORY_ALLOCATOR_DEBUG {
         vkmemalloc :: #library,no_dll "libs/VkMemAlloc_DEBUG";
     } else {
         vkmemalloc :: #library,no_dll "libs/VkMemAlloc";
     }
-    // #scope_export
 } else #if OS == .LINUX {
     #load "generated_linux.jai";
+
+#scope_export // -------------------------------------------------------------------------------------------- { MODULE }
+
     libvulkan :: #system_library "libvulkan";
+
 }
 
-#scope_module
+#scope_module // -------------------------------------------------------------------------------------------- { MODULE }
 
 size_t  :: u64;
-
-
-

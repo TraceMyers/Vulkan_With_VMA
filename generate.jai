@@ -17,7 +17,6 @@ vulkan_h_location               :: "source/vulkan/vulkan.h";
     vulkan_lib_path :: "";
 }
 
-
 #if AT_COMPILE_TIME {
     #run {
         set_build_options_dc(.{do_output=false});
@@ -125,7 +124,6 @@ generate_bindings :: () -> bool {
             // so that we don't have to generate identical bindings for every platform just because the library name is different.
             context.generator.libraries[0].name = "libvulkan";
         };
-        footer = VULKAN_FOOTER;
 
         visitor     = vulkan_visitor;
         generate_compile_time_struct_checks = false;
@@ -234,8 +232,6 @@ vulkan_visitor :: (decl: *Declaration, parent_decl: *Declaration) -> Declaration
         if enum_value_name == "VIDEO_DECODE_H_265_DPB_SLOT_INFO_KHR" then enum_value_name = "VIDEO_DECODE_H265_DPB_SLOT_INFO_KHR";
         if enum_value_name == "VIDEO_DECODE_H_265_PROFILE_INFO_KHR" then enum_value_name = "VIDEO_DECODE_H265_PROFILE_INFO_KHR";
 
-
-
         enum_value: *Enum.Enumerate;
         for * struct_type_decl.enumerates {
             if it.output_name == enum_value_name {
@@ -303,17 +299,3 @@ get_sType_default_value_from_struct_name :: (name: string) -> string {
 #import "String";
 #import "Hash_Table";
 #import "BuildCpp";
-
-VULKAN_FOOTER :: #string END
-#scope_file
-
-#if OS == .WINDOWS {
-    libvulkan :: #library "libs/vulkan-1";
-} else #if OS == .LINUX {
-    libvulkan :: #system_library "libvulkan.so.1";
-} else {
-    #assert(false);
-}
-END
-
-// Crt      :: #system_library "msvcrt";

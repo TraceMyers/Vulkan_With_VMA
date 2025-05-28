@@ -20146,12 +20146,3 @@ vmaFreeStatsString :: (allocator: VmaAllocator, pStatsString: *u8) -> void #fore
 
 #scope_file
 
-#scope_file
-
-#if OS == .WINDOWS {
-    libvulkan :: #library "libs/vulkan-1";
-} else #if OS == .LINUX {
-    libvulkan :: #system_library "libvulkan.so.1";
-} else {
-    #assert(false);
-}
